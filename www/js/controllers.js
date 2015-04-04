@@ -116,8 +116,6 @@ angular.module('ionicApp.controllers', [])
 	                    .error(function(response, status) {
 	                        errorHandle();
 	                    });
-	                    //$location.path("/secure");
-	                    //$location.path("/detect");
 	                })
 	                .error(function(data, status) {
 	                    errorHandle();
@@ -128,19 +126,72 @@ angular.module('ionicApp.controllers', [])
 	}
 }])
 
-.controller('SecureCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
+.controller('SecureCtrl', ['$scope', '$state', '$http', function($scope, $state, $http) {
 	$scope.accessToken = accessToken;
 	$scope.refreshToken = refreshToken;
 	$scope.IDToken = IDToken;
 	console.log("In secure!");
 	$scope.smooth = function() {
 		console.log("Do something!");
-		// in this function, we need to do several things, 
-		// 1st, change the view to '/detect', in this view, user can see his earliest event in one day
-		//$location.path("/detect");
-		// 2nd, use 'topEvent' restful api to retrieve earliest event 
-		// 3rd, do the first traffic detection, sending user current location to server, via '/duration'
+		$state.go('eventsList');
 	}
+}])
+
+.controller('EventCtrl', ['$scope', '$state', '$http', '$q', function($scope, $state, $http, $q) {
+	console.log("In event list!");
+
+	$scope.init = function(){
+		$scope.page = 1;
+		$scope.getImages()
+		.then(function(res){
+		  // success
+		  // console.log('Images: ', res)
+		  $scope.imageList = res.shots;
+		}, function(status){
+		  // err
+		  $scope.pageError = status;
+		});
+	}
+
+	$scope.setActive = function(index){
+		angular.forEach($scope.imageList, function(image){
+		  image.active = false;
+		})
+
+		$scope.imageList[index].active = true
+	};
+
+	$scope.getImages = function(){
+		var defer = $q.defer();
+
+		$http.jsonp('http://api.dribbble.com/shots/everyone?page=' + $scope.page +  '&callback=JSON_CALLBACK')
+			.success(function(res){
+			  defer.resolve(res)
+			})
+			.error(function(status, err){
+			  defer.reject(status)
+			});
+
+		return defer.promise;
+	}
+
+	$scope.nextPage = function(){
+		$scope.page += 1;
+
+		$scope.getImages()
+		.then(function(res){
+		  if($scope.imageList[0]){
+		    $scope.imageList = $scope.imageList.concat(res.shots)
+		  }
+		  else{
+		    $scope.imageList = res.shots;
+		  }
+		  // console.log('nextPage: ', $scope.imageList)
+		  $scope.$broadcast('scroll.infiniteScrollComplete');
+		})
+	};
+
+	$scope.init();
 }]);
 
 
