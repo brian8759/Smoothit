@@ -2,14 +2,21 @@
     <ion-content padding="true">
         <div>
             <div class="padding">
-            	<!--
-            	{{accessToken}}<br>
-            	{{refreshToken}} <br>
-            	{{IDToken}}<br>
-            	-->
                 <button ng-click="smooth()" class="button button-block button-stable">
                     Smoothit
                 </button>
+
+                <button ng-click="getLocation()" class="button button-block button-stable">
+                    get location
+                </button>
+
+                <div> 
+                    lat: {{currentLat}} <br>
+                    long: {{currentLong}}
+                </div>
+
+                
+
             </div>
         </div>
     </ion-content>

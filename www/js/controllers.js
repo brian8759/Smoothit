@@ -107,8 +107,8 @@ angular.module('ionicApp.controllers', [])
 	                        		// successfully store token and email to backend
 	                        		// then try to get the top event
 	                        		console.log('Just save user info !');
-	                        		//$state.go('secure');
-	                        		$state.go('eventList');
+	                        		$state.go('secure');
+	                        		//$state.go('eventList');
 	                        	} else {
 	                        		errorHandle();
 	                        	}
@@ -128,15 +128,57 @@ angular.module('ionicApp.controllers', [])
 	}
 }])
 
-.controller('SecureCtrl', ['$scope', '$state', '$http', function($scope, $state, $http) {
+.controller('SecureCtrl', ['$scope', '$state', '$http', '$ionicPopup', '$cordovaGeolocation', function($scope, $state, $http, $ionicPopup, $cordovaGeolocation) {
 	$scope.accessToken = accessToken;
 	$scope.refreshToken = refreshToken;
 	$scope.IDToken = IDToken;
 	console.log("In secure!");
+
+	var errorHandle = function() {
+		var alertPopup = $ionicPopup.alert({
+			title: 'something wrong',
+			template: 'Can not get location'
+		});
+		alertPopup.then(function(res) {
+			$state.go('eventList');
+		});
+	};
+
 	$scope.smooth = function() {
 		console.log("Do something!");
 		$state.go('eventList');
-	}
+	};
+
+	// $scope.getLocation = function() {
+	// 	console.log("try to use navigator");
+	// 	navigator.geolocation.getCurrentPosition(function(position) {
+	// 		console.log("using navigator");
+	// 		$scope.currentLat = position.coords.latitude;
+	// 		$scope.currentLong = position.coords.longitude;
+ //        	console.log($scope.currentLat);
+	// 		console.log($scope.currentLong);
+ //        }, function(error) {
+ //        	console.log(error.message);
+ //        	errorHandle();
+ //        });
+	// };
+
+	$scope.getLocation = function() {
+		var posOptions = {timeout: 10000, enableHighAccuracy: false};
+		  $cordovaGeolocation
+		    .getCurrentPosition(posOptions)
+		    .then(function (position) {
+		      $scope.currentLat = position.coords.latitude;
+		      $scope.currentLong = position.coords.longitude;
+		      console.log($scope.currentLat);
+			  console.log($scope.currentLong);
+		    }, function(err) {
+		      // error
+		      console.log(err);
+		      errorHandle();
+		    });
+	};
+
 }])
 
 .controller('EventCtrl', ['$scope', '$state', '$http', '$q', function($scope, $state, $http, $q) {
