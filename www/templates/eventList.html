@@ -1,0 +1,17 @@
+<ion-view hide-back-button="true" view-title="Events">
+    <ion-content padding="true">
+        <div class="list card" data-ng-repeat="event in eventList">
+
+            <div>
+                <p>Event name: {{event.eventname}}</p>
+                <p>Event time: {{event.datetime}}</p>
+                <p>Event address: {{event.address}}</p>
+                
+            </div>
+        </div>
+        <!-- <ion-infinite-scroll
+            on-infinite="nextPage()"
+            distance="5%" data-ng-if="page < 10">
+        </ion-infinite-scroll> -->
+    </ion-content>
+</ion-view>

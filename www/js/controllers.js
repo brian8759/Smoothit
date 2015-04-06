@@ -1,7 +1,8 @@
-var clientID = '885179545921-a7cn7493fhh2o2uva62qc3eoutgs2tls.apps.googleusercontent.com';
-var clientSecret = 'c8HEJxHyVW5XrenNTIrgvYO2';
+var clientID = '465166072015-hgfci110risj5deonfivs1tfefg8kd3u.apps.googleusercontent.com';
+var clientSecret = 'ySRObG-gC6Gl2xyAaDxf0PpP';
   //calendarId: 'brian8759@gmail.com',
-var redirectURL = 'http://localhost/oauth2callback';
+//var redirectURL = 'http://localhost/oauth2callback';
+var redirectURL = 'http://localhost';
 var GoogleScope = 'openid email https://www.googleapis.com/auth/calendar';
 //var GoogleScope = 'https://www.googleapis.com/auth/calendar';
 var requestToken = '';
@@ -73,7 +74,7 @@ angular.module('ionicApp.controllers', [])
 			console.log(event);
 			var eventURL = event.url;
 			// check if the redirect url is the one we want
-			if(eventURL.indexOf('http://localhost/oauth2callback') === 0) {
+			if(eventURL.indexOf('http://localhost') === 0) {
 				// parse the requestToken from the eventURL
 				var code = eventURL.split("code=")[1].split("&");
 				requestToken = code[0];
@@ -106,7 +107,8 @@ angular.module('ionicApp.controllers', [])
 	                        		// successfully store token and email to backend
 	                        		// then try to get the top event
 	                        		console.log('Just save user info !');
-	                        		$state.go('secure');
+	                        		//$state.go('secure');
+	                        		$state.go('eventList');
 	                        	} else {
 	                        		errorHandle();
 	                        	}
@@ -133,63 +135,69 @@ angular.module('ionicApp.controllers', [])
 	console.log("In secure!");
 	$scope.smooth = function() {
 		console.log("Do something!");
-		$state.go('eventsList');
+		$state.go('eventList');
 	}
 }])
 
 .controller('EventCtrl', ['$scope', '$state', '$http', '$q', function($scope, $state, $http, $q) {
 	console.log("In event list!");
 
-	$scope.init = function(){
+	// $scope.init = function(){
+	// 	$scope.page = 1;
+	// 	$scope.getImages()
+	// 	.then(function(res){
+	// 	  // success
+	// 	  // console.log('Images: ', res)
+	// 	  $scope.imageList = res.shots;
+	// 	}, function(status){
+	// 	  // err
+	// 	  $scope.pageError = status;
+	// 	});
+	// }
+
+	$scope.init = function() {
 		$scope.page = 1;
-		$scope.getImages()
-		.then(function(res){
-		  // success
-		  // console.log('Images: ', res)
-		  $scope.imageList = res.shots;
-		}, function(status){
-		  // err
-		  $scope.pageError = status;
+		$scope.getEvents()
+		.then(function(res) {
+			$scope.eventList = res.events;
+		}, function(status) {
+			$scope.pageError = status;
 		});
-	}
-
-	$scope.setActive = function(index){
-		angular.forEach($scope.imageList, function(image){
-		  image.active = false;
-		})
-
-		$scope.imageList[index].active = true
 	};
 
-	$scope.getImages = function(){
+	// $scope.setActive = function(index){
+	// 	angular.forEach($scope.imageList, function(image){
+	// 	  image.active = false;
+	// 	})
+
+	// 	$scope.imageList[index].active = true
+	// };
+
+	$scope.getEvents = function() {
 		var defer = $q.defer();
-
-		$http.jsonp('http://api.dribbble.com/shots/everyone?page=' + $scope.page +  '&callback=JSON_CALLBACK')
-			.success(function(res){
-			  defer.resolve(res)
-			})
-			.error(function(status, err){
-			  defer.reject(status)
-			});
-
+		// right now, I hard coded the email address, in the future, should use "email"
+		$http.get('http://54.68.110.119/smoothit/' + 'fuqiang3701@gmail.com' + '/eventList')
+			 .success(function(res) {
+			 	defer.resolve(res);
+			 })
+			 .error(function(status, err) {
+			 	defer.reject(status);
+			 });
 		return defer.promise;
-	}
-
-	$scope.nextPage = function(){
-		$scope.page += 1;
-
-		$scope.getImages()
-		.then(function(res){
-		  if($scope.imageList[0]){
-		    $scope.imageList = $scope.imageList.concat(res.shots)
-		  }
-		  else{
-		    $scope.imageList = res.shots;
-		  }
-		  // console.log('nextPage: ', $scope.imageList)
-		  $scope.$broadcast('scroll.infiniteScrollComplete');
-		})
 	};
+
+	// $scope.nextPage = function() {
+	// 	$scope.page += 1;
+	// 	$scope.getEvents()
+	// 	.then(function(res) {
+	// 		if($scope.eventList[0]) {
+	// 			$scope.eventList = $scope.eventList.concat(res.events);
+	// 		} else {
+	// 			$scope.eventList = res.events;
+	// 		}
+	// 		$scope.$broadcast('scroll.infiniteScrollComplete');
+	// 	});
+	// };
 
 	$scope.init();
 }]);

@@ -40,9 +40,9 @@ angular.module('ionicApp', ['ionic', 'ionicApp.controllers'])
     controller: 'SecureCtrl'
   })
 
-  .state('eventsList', {
-    url: '/eventsList',
-    templateUrl: 'templates/eventsList.html',
+  .state('eventList', {
+    url: '/eventList',
+    templateUrl: 'templates/eventList.html',
     controller: 'EventCtrl'
   })
 
