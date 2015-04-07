@@ -1,0 +1,17 @@
+<ion-view view-title="Top Event">
+	<ion-nav-buttons side="right">
+	    <button class="button button-positive button-clear no-animation" ng-click="getEventList()">
+	      Events
+	    </button>
+  	</ion-nav-buttons>
+
+    <ion-content padding="true">
+      	<div class="card">
+		  	<div class="item item-text-wrap">
+		    	Event name: {{eventname}}<br>
+                Event time: {{datetime}}<br>
+                Event address: {{address}}
+		  	</div>
+		</div>
+    </ion-content>
+</ion-view>

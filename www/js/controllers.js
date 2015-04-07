@@ -10,17 +10,24 @@ var accessToken = '';
 var refreshToken = '';
 var IDToken = '';
 var email = '';
+var timeInterval = 5000; // 1 second
+var gap = 100000 * 60 * 1000; // gap for duration
+var time = new Date();
 
 // avoid conflicting
 jQuery.noConflict();
 
 angular.module('ionicApp.controllers', [])
 
-.controller('IntroCtrl', ['$scope', '$state', '$ionicSlideBoxDelegate', function ($scope, $state, $ionicSlideBoxDelegate) {
+.controller('IntroCtrl', ['$scope', '$state', '$ionicSlideBoxDelegate', 'LocalStorage', function ($scope, $state, $ionicSlideBoxDelegate, LocalStorage) {
+  if(LocalStorage.get('doneIntro') === true) {
+  	$state.go('login');
+  }
 
   // Called to navigate to the main app
   $scope.startApp = function () {
     $state.go('login');
+    LocalStorage.set('doneIntro', true);
   };
   $scope.next = function () {
     //$ionicSlideBoxDelegate.select($ionicSlideBoxDelegate.next());
@@ -146,22 +153,8 @@ angular.module('ionicApp.controllers', [])
 
 	$scope.smooth = function() {
 		console.log("Do something!");
-		$state.go('eventList');
+		$state.go('topEvent');
 	};
-
-	// $scope.getLocation = function() {
-	// 	console.log("try to use navigator");
-	// 	navigator.geolocation.getCurrentPosition(function(position) {
-	// 		console.log("using navigator");
-	// 		$scope.currentLat = position.coords.latitude;
-	// 		$scope.currentLong = position.coords.longitude;
- //        	console.log($scope.currentLat);
-	// 		console.log($scope.currentLong);
- //        }, function(error) {
- //        	console.log(error.message);
- //        	errorHandle();
- //        });
-	// };
 
 	$scope.getLocation = function() {
 		var posOptions = {timeout: 10000, enableHighAccuracy: false};
@@ -179,6 +172,117 @@ angular.module('ionicApp.controllers', [])
 		    });
 	};
 
+}])
+
+.controller('TopEventCtrl', ['$scope', '$http', '$state', '$interval', '$cordovaGeolocation', '$ionicPopup', function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup) {
+	$scope.getEventList = function() {
+		$state.go('eventList');
+	};
+
+	var posOptions = {timeout: 10000, enableHighAccuracy: false};
+	var promise;
+	$scope.eventname = '';
+	$scope.datetime = '';
+	$scope.address = '';
+
+	console.log("in top event");
+
+	$http.get('http://54.68.110.119/smoothit/' + 'fuqiang3701@gmail.com' + '/topEvent')
+		 .success(function(res) {
+		 	if(res.status === 'success') {
+		 		console.log(res.event.eventname);
+		 		console.log(res.event.datetime);
+		 		console.log(res.event.address);
+		 		$scope.eventname = res.event.eventname;
+		 		$scope.datetime = res.event.datetime;
+		 		$scope.address = res.event.address;
+		 		console.log($scope.eventname);
+		 		console.log($scope.datetime);
+		 		console.log($scope.address);
+		 		// we need to register a background process now
+		 		register();
+		 	} else {
+		 		console.log("something wrong");
+		 	}
+		 })
+		 .error(function(status, err) {
+		 	console.log(err);
+		 });
+
+	function register() {
+		console.log("Just register");
+		cancel();
+		promise = $interval(checkTraffic, timeInterval);
+	}
+
+	function cancel() {
+		$interval.cancel(promise);
+	}
+
+	function checkTraffic() {
+		// first get user current geolocation
+		  $cordovaGeolocation
+		    .getCurrentPosition(posOptions)
+		    .then(function (position) {
+		      var currentLat = position.coords.latitude;
+		      var currentLong = position.coords.longitude;
+		      console.log(currentLat);
+			  console.log(currentLong);
+			  // then we need to call api to get real time travel duration
+			  $http({
+			  	method: "GET",
+			  	url: "http://54.68.110.119/smoothit/fuqiang3701@gmail.com/duration",
+			  	params: {
+			  		lat: "" + currentLat,
+			  		lng: "" + currentLong,
+			  	}
+			  })
+			  .success(function(res) {
+			  	if(res.status === 'success') {
+			  		// res.duration is the travel time in seconds
+			  		// res.event.datetime is the event time
+			  		// check the gap between this two 
+			  		var curTime = time.getTime();
+			  		console.log(res.event.datetime);
+			  		if((Date.parse(res.event.datetime) - curTime) > (res.duration*1000 + gap)) {
+			  			// silent
+			  		} else {
+			  			// pop up an alert
+ 						confirm(res.event.eventname);
+			  		}
+			  	}
+			  })
+			  .error();
+		    }, function(err) {
+		      // error
+		      console.log(err);
+		      errorHandle();
+		    });
+
+	}
+
+	function confirm(eventname) {
+	   var confirmPopup = $ionicPopup.confirm({
+	     title: 'Caution!',
+	     template: 'You need to go for ' + eventname,
+	     cssClass: '',
+	     subTitle: '',
+	     templateUrl: '',
+	     cancelText: 'Later',
+	     cancelType: 'button-default',
+	     okText: 'Got it',
+	     okType: 'button-positive'
+	   });
+	   confirmPopup.then(function(res) {
+	     if(res) {
+	       console.log('You are sure');
+	       cancel();
+	     } else {
+	       console.log('You are not sure');
+	       cancel();
+	     }
+	   });
+	};
 }])
 
 .controller('EventCtrl', ['$scope', '$state', '$http', '$q', function($scope, $state, $http, $q) {
