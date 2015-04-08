@@ -7,11 +7,19 @@
 
     <ion-content padding="true">
       	<div class="card">
-		  	<div class="item item-text-wrap">
+		  	<div class="item item-text-wrap" ng-show="show">
 		    	Event name: {{eventname}}<br>
                 Event time: {{datetime}}<br>
                 Event address: {{address}}
 		  	</div>
+		  	<div class="item item-text-wrap" ng-hide="show">
+		  		You don't have events today.
+		  	</div>
+		</div>
+		<div class="padding">
+			<button class="button button-block button-stable" ng-click="cancelNotification()">
+				cancel
+			</button>
 		</div>
     </ion-content>
 </ion-view>

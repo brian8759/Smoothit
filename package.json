@@ -19,9 +19,11 @@
     "org.apache.cordova.console",
     "com.ionic.keyboard",
     "org.apache.cordova.inappbrowser",
-    "org.apache.cordova.geolocation"
+    "org.apache.cordova.geolocation",
+    "de.appplant.cordova.plugin.local-notification"
   ],
   "cordovaPlatforms": [
-    "ios"
+    "ios",
+    "android"
   ]
 }

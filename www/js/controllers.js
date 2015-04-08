@@ -1,3 +1,5 @@
+'use strict';
+
 var clientID = '465166072015-hgfci110risj5deonfivs1tfefg8kd3u.apps.googleusercontent.com';
 var clientSecret = 'ySRObG-gC6Gl2xyAaDxf0PpP';
   //calendarId: 'brian8759@gmail.com',
@@ -10,7 +12,7 @@ var accessToken = '';
 var refreshToken = '';
 var IDToken = '';
 var email = '';
-var timeInterval = 5000; // 1 second
+var timeInterval = 5000; // 5 second
 var gap = 100000 * 60 * 1000; // gap for duration
 var time = new Date();
 
@@ -20,21 +22,16 @@ jQuery.noConflict();
 angular.module('ionicApp.controllers', [])
 
 .controller('IntroCtrl', ['$scope', '$state', '$ionicSlideBoxDelegate', 'LocalStorage', function ($scope, $state, $ionicSlideBoxDelegate, LocalStorage) {
-  if(LocalStorage.get('doneIntro') === true) {
-  	$state.go('login');
-  }
 
   // Called to navigate to the main app
   $scope.startApp = function () {
+  	LocalStorage.set('skip', 'true');
     $state.go('login');
-    LocalStorage.set('doneIntro', true);
   };
   $scope.next = function () {
-    //$ionicSlideBoxDelegate.select($ionicSlideBoxDelegate.next());
     $ionicSlideBoxDelegate.next();
   };
   $scope.previous = function () {
-    //$ionicSlideBoxDelegate.select($ionicSlideBoxDelegate.previous());
     $ionicSlideBoxDelegate.previous();
   };
 
@@ -135,7 +132,8 @@ angular.module('ionicApp.controllers', [])
 	}
 }])
 
-.controller('SecureCtrl', ['$scope', '$state', '$http', '$ionicPopup', '$cordovaGeolocation', function($scope, $state, $http, $ionicPopup, $cordovaGeolocation) {
+.controller('SecureCtrl', ['$scope', '$state', '$http', '$ionicPopup', '$cordovaGeolocation', 'LocalStorage', 
+function($scope, $state, $http, $ionicPopup, $cordovaGeolocation, LocalStorage) {
 	$scope.accessToken = accessToken;
 	$scope.refreshToken = refreshToken;
 	$scope.IDToken = IDToken;
@@ -172,9 +170,21 @@ angular.module('ionicApp.controllers', [])
 		    });
 	};
 
+	$scope.reset = function() {
+		LocalStorage.set('skip', 'false');
+	};
 }])
 
-.controller('TopEventCtrl', ['$scope', '$http', '$state', '$interval', '$cordovaGeolocation', '$ionicPopup', function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup) {
+.controller('TopEventCtrl', ['$scope', '$http', '$state', '$interval', '$cordovaGeolocation', '$ionicPopup', '$cordovaLocalNotification', '$ionicLoading', 'LocalStorage',
+function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $cordovaLocalNotification, $ionicLoading, LocalStorage) {
+	// hide loading process
+	$ionicLoading.show({
+    	template: 'Loading Top Event...'
+  	});
+
+	LocalStorage.set('notification', 'false');
+	LocalStorage.set('confirm', 'false');
+
 	$scope.getEventList = function() {
 		$state.go('eventList');
 	};
@@ -184,12 +194,15 @@ angular.module('ionicApp.controllers', [])
 	$scope.eventname = '';
 	$scope.datetime = '';
 	$scope.address = '';
+	$scope.show = false;
 
 	console.log("in top event");
 
-	$http.get('http://54.68.110.119/smoothit/' + 'fuqiang3701@gmail.com' + '/topEvent')
+	// fetch 
+	$http.get('http://54.68.110.119/smoothit/' + email + '/topEvent')
 		 .success(function(res) {
 		 	if(res.status === 'success') {
+		 		$scope.show = true;
 		 		console.log(res.event.eventname);
 		 		console.log(res.event.datetime);
 		 		console.log(res.event.address);
@@ -199,9 +212,13 @@ angular.module('ionicApp.controllers', [])
 		 		console.log($scope.eventname);
 		 		console.log($scope.datetime);
 		 		console.log($scope.address);
+		 		// release the screen to user
+		 		$ionicLoading.hide();
 		 		// we need to register a background process now
 		 		register();
 		 	} else {
+		 		// user don't have event!
+		 		$ionicLoading.hide();
 		 		console.log("something wrong");
 		 	}
 		 })
@@ -219,6 +236,7 @@ angular.module('ionicApp.controllers', [])
 		$interval.cancel(promise);
 	}
 
+
 	function checkTraffic() {
 		// first get user current geolocation
 		  $cordovaGeolocation
@@ -231,7 +249,7 @@ angular.module('ionicApp.controllers', [])
 			  // then we need to call api to get real time travel duration
 			  $http({
 			  	method: "GET",
-			  	url: "http://54.68.110.119/smoothit/fuqiang3701@gmail.com/duration",
+			  	url: "http://54.68.110.119/smoothit/" + email + "/duration",
 			  	params: {
 			  		lat: "" + currentLat,
 			  		lng: "" + currentLong,
@@ -248,7 +266,9 @@ angular.module('ionicApp.controllers', [])
 			  			// silent
 			  		} else {
 			  			// pop up an alert
- 						confirm(res.event.eventname);
+			  			if(LocalStorage.get('notification') !== 'true') confirm(res.event.eventname);
+
+ 						if(LocalStorage.get('notification') !== 'true') addNotification();
 			  		}
 			  	}
 			  })
@@ -273,21 +293,74 @@ angular.module('ionicApp.controllers', [])
 	     okText: 'Got it',
 	     okType: 'button-positive'
 	   });
+
+	   LocalStorage.set('notification', 'true');
+
 	   confirmPopup.then(function(res) {
 	     if(res) {
 	       console.log('You are sure');
 	       cancel();
 	     } else {
+	     	// remind me later
+	     	LocalStorage.set('notification', 'false');
+	     	// http://54.68.110.119/smoothit/email/ignoredEvent
 	       console.log('You are not sure');
 	       cancel();
 	     }
 	   });
+	}
+
+	// when current top event expired, we try to fetch a new top event!!
+	// this logic can be done by $timeout(function, timeElapse)
+	var now = new Date().getTime();
+	var _30_sec_from_now = new Date(now + 30 * 1000);
+
+	function addNotification() {
+		//$cordovaLocalNotification.add({
+		cordova.plugins.notification.local.schedule({
+	        id: '1',
+	        title: 'Get ready for',
+	        text: $scope.eventname,
+	        at: _30_sec_from_now, // starting time
+	        every: 'minute'
+	      });
+	}
+
+	//addNotification();
+
+	$scope.cancelNotification = function() {
+		// $cordovaLocalNotification.cancelAll().then(function () {
+  //     		console.log('callback for canceling all background notifications');
+  //   	});
+		cordova.plugins.notification.local.cancelAll(function() {
+			console.log('callback for canceling all background notifications');
+		});
 	};
+
+	cordova.plugins.notification.local.on("click", function (notification) {
+    	handleClick(notification);
+	});
+
+	cordova.plugins.notification.local.on("schedule", function (notification) {
+    	handleSchedule(notification);
+	});
+
+	function handleSchedule(notification) {
+		LocalStorage.set('notification', 'true');
+		console.log('adding notification ' + notification.id);
+	}
+
+	function handleClick(notification) {
+		console.log(notification.text);
+	}
 }])
 
-.controller('EventCtrl', ['$scope', '$state', '$http', '$q', function($scope, $state, $http, $q) {
+.controller('EventCtrl', ['$scope', '$state', '$http', '$q', '$ionicLoading', function($scope, $state, $http, $q, $ionicLoading) {
 	console.log("In event list!");
-
+	// hide loading process
+	$ionicLoading.show({
+    	template: 'Loading Events...'
+  	});
 	// $scope.init = function(){
 	// 	$scope.page = 1;
 	// 	$scope.getImages()
@@ -306,8 +379,10 @@ angular.module('ionicApp.controllers', [])
 		$scope.getEvents()
 		.then(function(res) {
 			$scope.eventList = res.events;
+			$ionicLoading.hide();
 		}, function(status) {
 			$scope.pageError = status;
+			$ionicLoading.hide();
 		});
 	};
 
@@ -322,7 +397,7 @@ angular.module('ionicApp.controllers', [])
 	$scope.getEvents = function() {
 		var defer = $q.defer();
 		// right now, I hard coded the email address, in the future, should use "email"
-		$http.get('http://54.68.110.119/smoothit/' + 'fuqiang3701@gmail.com' + '/eventList')
+		$http.get('http://54.68.110.119/smoothit/' + email + '/eventList')
 			 .success(function(res) {
 			 	defer.resolve(res);
 			 })

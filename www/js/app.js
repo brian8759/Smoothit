@@ -3,10 +3,12 @@
 // angular.module is a global place for creating, registering and retrieving Angular modules
 // 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
+'use strict';
+
 angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionicApp.services'])
 
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $rootScope, LocalStorage, $state, $timeout) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -16,12 +18,54 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
     if(window.StatusBar) {
       StatusBar.styleDefault();
     }
+
+    var skipIntro;
+
+    $rootScope.$on('$stateChangeStart',
+        function(event, toState, toParams, fromState) {
+            skipIntro = LocalStorage.get('skip') === 'true' ? true : false;
+
+            if (fromState.name === 'login' && toState.name === 'intro') {
+                if (skipIntro) {
+                    navigator.app.exitApp();
+                }
+            }
+            if (fromState.name === 'intro' && toState.name === 'loading') {
+                navigator.app.exitApp();
+            }
+            if (fromState.name === 'login' && toState.name === 'loading') {
+                navigator.app.exitApp();
+            }
+            if (toState.name === 'intro') {
+                if (skipIntro) {
+                    $state.go('login');
+                }
+            }
+        });
+
+    skipIntro = LocalStorage.get('skip') === 'true' ? true : false;
+
+    if ($state.is('loading')) {
+        $timeout(function() {
+            if (skipIntro) {
+                $state.go('login');
+            } else {
+                $state.go('intro');
+            }
+        }, 1000);
+    }
+
   });
 })
 
 .config(function($stateProvider, $urlRouterProvider) {
 
   $stateProvider
+  .state('loading', {
+    url: '/loading',
+    templateUrl: 'templates/loading.html'
+  })
+
   .state('intro', {
     url: '/intro',
     templateUrl: 'templates/intro.html',
@@ -58,7 +102,7 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
     controller: 'MainCtrl'
   });
 
-  $urlRouterProvider.otherwise("/intro");
+  $urlRouterProvider.otherwise("/loading");
 
 });
 
