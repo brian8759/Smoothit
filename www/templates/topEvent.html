@@ -1,28 +1,26 @@
-<ion-view view-title="Top Event">
-	<!-- <ion-nav-buttons side="right">
-	    <button class="button button-positive button-clear no-animation" ng-click="getEventList()">
-	      Events
-	    </button>
-  	</ion-nav-buttons> -->
-
-    <ion-content padding="true" on-swipe-left="onSwipeLeft()">
+<ion-view>
+	<div class="bar bar-header bar-calm">
+        <h1 class="title">Top Event</h1>
+        <button class="button button-icon icon ion-ios-list-outline" ng-click="getEventList()"></button>
+    </div>
+    <ion-content class="has-header" padding="true" on-swipe-left="onSwipeLeft()">
     	<ion-refresher pulling-text="Pull to refresh" on-refresh="doRefresh()">
         </ion-refresher>
 
       	<div class="card">
       	  <div class="item item-divider" ng-show="show">
-		      {{eventname}}
+		      <div class="eventName"> <i class="icon ion-ios-calendar-outline"></i> {{eventname}} </div>
 		  </div>
 		  <div class="item item-text-wrap" ng-show="show">
-              {{datetime}}<br>
-              {{address}}
+              <div class="eventTime"> <i class="icon ion-ios-time-outline"></i> {{datetime}} </div>
+              <div class="eventAddress"> <i class="icon ion-ios-location-outline"></i> {{address}} </div>
 		  </div>
 		  <div class="item item-divider" ng-show="show">
-		      {{travelTime}}
+		      <div class="travelTime"> <i class="icon ion-model-s"></i> {{travelTime}} </div>
 		  </div>
 		  
 		  	<div class="item item-text-wrap" ng-hide="show">
-		  		You don't have events today.
+		  		<div class="eventName"> You don't have events today. </div>
 		  	</div>
 		</div>
 
@@ -31,7 +29,5 @@
 				cancel
 			</button>
 		</div>
-
-		<!-- <button id="swipeButton" on-swipe-left="onSwipeLeft()" class="button button-block button-positive">Test</button> -->
-    </ion-content>
+	</ion-content>
 </ion-view>

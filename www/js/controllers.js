@@ -10,7 +10,7 @@ var accessToken = '';
 var refreshToken = '';
 var IDToken = '';
 var email = '';
-var timeInterval = 10 * 1000; // 5 second
+var timeInterval = 10 * 1000; // 10 second
 var gap = 100000 * 60 * 1000; // gap for duration
 var time = new Date();
 
@@ -19,13 +19,9 @@ jQuery.noConflict();
 
 angular.module('ionicApp.controllers', [])
 
-.controller('IntroCtrl', ['$scope', '$state', '$ionicSlideBoxDelegate', 'LocalStorage', function ($scope, $state, $ionicSlideBoxDelegate, LocalStorage) {
-
-  // Called to navigate to the main app
-  $scope.startApp = function () {
-  	//LocalStorage.set('skip', 'true');
-    $state.go('login');
-  };
+.controller('IntroCtrl', ['$scope', '$http', '$state', '$ionicSlideBoxDelegate', 'LocalStorage', 
+function ($scope, $http, $state, $ionicSlideBoxDelegate, LocalStorage) {
+  LocalStorage.set('skip', 'false');
   $scope.next = function () {
     $ionicSlideBoxDelegate.next();
   };
@@ -38,18 +34,7 @@ angular.module('ionicApp.controllers', [])
     $scope.slideIndex = index;
   };
 
-  $scope.signin = function() {
-  	//LocalStorage.set('skip', 'true');
-  	$state.go('login');
-  };
-}])
-
-.controller('LoginCtrl', ['$scope', '$ionicPopup', '$state', '$http', '$location', 'LocalStorage', 
-function($scope, $ionicPopup, $state, $http, $location, LocalStorage) {
-	$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
-	// for showing user intro
-	LocalStorage.set('skip', 'false');
-	var errorHandle = function() {
+  var errorHandle = function() {
 		var alertPopup = $ionicPopup.alert({
 			title: 'something wrong',
 			template: 'Please sign in again'
@@ -59,7 +44,8 @@ function($scope, $ionicPopup, $state, $http, $location, LocalStorage) {
 		});
 	};
 
-	$scope.login = function() {
+  $scope.signin = function() {
+  		$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 		// construct the url part
 		var loginUrl = 'https://accounts.google.com/o/oauth2/auth?' + 
 						jQuery.param({
@@ -81,8 +67,6 @@ function($scope, $ionicPopup, $state, $http, $location, LocalStorage) {
 				// parse the requestToken from the eventURL
 				var code = eventURL.split("code=")[1].split("&");
 				requestToken = code[0];
-				//console.log("requestToken:" + requestToken);
-				//Here, the app will use the requestToken to ask for accessToken and refreshToken from Google
 				$http({ method: "POST", 
 						url: "https://accounts.google.com/o/oauth2/token", 
 						data: "client_id=" + clientID + "&client_secret=" + 
@@ -90,33 +74,22 @@ function($scope, $ionicPopup, $state, $http, $location, LocalStorage) {
 							   "&grant_type=authorization_code" + "&code=" + requestToken })
 	            
 	            	.success(function(data) {
-	                    // data = {id_token, access_token, expires_in, refresh_token, token_type}
-	                    // console.log(data);
 	                    accessToken = data.access_token;
 	                    IDToken = data.id_token;
 	                    refreshToken = data.refresh_token;
 	                    $http({ method: "GET", url: "https://www.googleapis.com/oauth2/v1/tokeninfo?id_token=" + IDToken })
 	                    .success(function(response) {
-	                    	// response has {audience, email, email_verified, expires_in, issued_at, user_id}
-	                        // console.log(response);
-	                        
-	                        // we send the email address and accessToken and refreshToken to backend
 	                        email = response.email;
-	                        // console.log(email);
 	                        $http({ method: "POST", url: baseURL + email + "/token", 
 	                        		data: "access_token=" + accessToken + "&refresh_token=" + refreshToken })
 	                        .success(function(res) {
 	                        	if(res.status === "success") {
-	                        		// successfully store token and email to backend
-	                        		// then try to get the top event
 	                        		console.log('Just save user info !');
-	                        		//$state.go('secure');
 	                        		$state.go('topEvent');
 	                        	} else {
 	                        		errorHandle();
 	                        	}
 	                        })
-	                    		
 	                    })
 	                    .error(function(response, status) {
 	                        errorHandle();
@@ -128,87 +101,93 @@ function($scope, $ionicPopup, $state, $http, $location, LocalStorage) {
 	        	ref.close();
 			}
 		})
-	}
+	};
 }])
 
-// .controller('SecureCtrl', ['$scope', '$state', '$http', '$ionicPopup', '$cordovaGeolocation', 'LocalStorage', 
-// function($scope, $state, $http, $ionicPopup, $cordovaGeolocation, LocalStorage) {
-// 	$scope.accessToken = accessToken;
-// 	$scope.refreshToken = refreshToken;
-// 	$scope.IDToken = IDToken;
-// 	console.log("In secure!");
+.controller('LoginCtrl', ['$scope', '$ionicPopup', '$state', '$http', 'LocalStorage',
+function($scope, $ionicPopup, $state, $http, LocalStorage) {
+	// for showing user intro
+	LocalStorage.set('skip', 'false');
+	var errorHandle = function() {
+		var alertPopup = $ionicPopup.alert({
+			title: 'something wrong',
+			template: 'Please sign in again'
+		});
+		alertPopup.then(function(res) {
+			$state.go('login');
+		});
+	};
 
-// 	var errorHandle = function() {
-// 		var alertPopup = $ionicPopup.alert({
-// 			title: 'something wrong',
-// 			template: 'Can not get location'
-// 		});
-// 		alertPopup.then(function(res) {
-// 			$state.go('eventList');
-// 		});
-// 	};
+	$scope.login = function() {
+		$http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+		// construct the url part
+		var loginUrl = 'https://accounts.google.com/o/oauth2/auth?' + 
+						jQuery.param({
+				            client_id: clientID,
+				            redirect_uri: redirectURL,
+				            scope: GoogleScope,
+				            approval_prompt: 'force',
+				            response_type: 'code',
+				            access_type: 'offline'
+			        	});
+		
+		// use inappbrowser to login with google account
+		var ref = window.open(loginUrl, '_blank', 'location=no');
+		ref.addEventListener('loadstart', function(event) {
+			// console.log(event);
+			var eventURL = event.url;
+			// check if the redirect url is the one we want
+			if(eventURL.indexOf('http://localhost') === 0) {
+				// parse the requestToken from the eventURL
+				var code = eventURL.split("code=")[1].split("&");
+				requestToken = code[0];
+				$http({ method: "POST", 
+						url: "https://accounts.google.com/o/oauth2/token", 
+						data: "client_id=" + clientID + "&client_secret=" + 
+							   clientSecret + "&redirect_uri=" + redirectURL + 
+							   "&grant_type=authorization_code" + "&code=" + requestToken })
+	            
+	            	.success(function(data) {
+	                    accessToken = data.access_token;
+	                    IDToken = data.id_token;
+	                    refreshToken = data.refresh_token;
+	                    $http({ method: "GET", url: "https://www.googleapis.com/oauth2/v1/tokeninfo?id_token=" + IDToken })
+	                    .success(function(response) {
+	                        email = response.email;
+	                        $http({ method: "POST", url: baseURL + email + "/token", 
+	                        		data: "access_token=" + accessToken + "&refresh_token=" + refreshToken })
+	                        .success(function(res) {
+	                        	if(res.status === "success") {
+	                        		console.log('Just save user info !');
+	                        		$state.go('topEvent');
+	                        	} else {
+	                        		errorHandle();
+	                        	}
+	                        })
+	                    })
+	                    .error(function(response, status) {
+	                        errorHandle();
+	                    });
+	                })
+	                .error(function(data, status) {
+	                    errorHandle();
+	                });
+	        	ref.close();
+			}
+		})
+	};
+}])
 
-// 	$scope.smooth = function() {
-// 		console.log("Do something!");
-// 		$state.go('topEvent');
-// 	};
-
-// 	$scope.getLocation = function() {
-// 		var posOptions = {timeout: 10000, enableHighAccuracy: false};
-// 		  $cordovaGeolocation
-// 		    .getCurrentPosition(posOptions)
-// 		    .then(function (position) {
-// 		      $scope.currentLat = position.coords.latitude;
-// 		      $scope.currentLong = position.coords.longitude;
-// 		      console.log($scope.currentLat);
-// 			  console.log($scope.currentLong);
-// 		    }, function(err) {
-// 		      // error
-// 		      console.log(err);
-// 		      errorHandle();
-// 		    });
-// 	};
-
-// 	$scope.reset = function() {
-// 		LocalStorage.set('skip', 'false');
-// 	};
-// }])
-
-.controller('TopEventCtrl', ['$scope', '$http', '$state', '$interval', '$cordovaGeolocation', '$ionicPopup', '$cordovaLocalNotification', '$ionicLoading', 'LocalStorage',
-function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $cordovaLocalNotification, $ionicLoading, LocalStorage) {
+.controller('TopEventCtrl', ['$scope', '$http', '$state', '$interval', '$cordovaGeolocation', '$ionicPopup', '$cordovaLocalNotification', '$ionicLoading', 'LocalStorage', '$timeout',
+function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $cordovaLocalNotification, $ionicLoading, LocalStorage, $timeout) {
 	// make an initialize function for this scope, this is some sort of workflow of this scope.
-	email = 'fuqiang3701@gmail.com';
-	$scope.initialize = function() {
-		// since we need to use restful api to get user's topevent at current time, so we hide interface first
-		showLoading();
-		// then we can fetch top event
-		fetchTopEvent();
-		// if we have a top event, then 'checkTrafficTime' will be registered
-	};
-
-	// hide loading process
-	function showLoading() {
-		$ionicLoading.show({
-    		//template: 'Loading...'
-    		templateUrl: 'templates/ionicLoading.html'
-  		});
-	}
-	
-	// showLoading();
-
-	$scope.getEventList = function() {
-		cancel();
-    	console.log('stop interval');
-    	LocalStorage.set('confirm', 'false');
-		$state.go('eventList');
-	};
-
 	var posOptions = {timeout: 10000, enableHighAccuracy: false};
 	var promise;
 	var currentLat;
 	var currentLong;
 	var curTime;
 	var eventTime;
+	var timeoutPromise;
 
 	function init() {
 		$scope.eventid = '';
@@ -221,11 +200,35 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 		LocalStorage.set('interval', 'false');
 	}
 
+	$scope.initialize = function() {
+		stopInterval();
+		$timeout.cancel(timeoutPromise);
+		// since we need to use restful api to get user's topevent at current time, so we hide interface first
+		showLoading();
+		init();
+		// then we can fetch top event
+		fetchTopEvent();
+		// if we have a top event, then 'checkTrafficTime' will be registered
+	};
+
+	// hide loading process
+	function showLoading() {
+		$ionicLoading.show({
+    		templateUrl: 'templates/ionicLoading.html'
+  		});
+	}
+
+	$scope.getEventList = function() {
+		stopInterval();
+		$timeout.cancel(timeoutPromise);
+    	console.log('stop interval');
+    	LocalStorage.set('confirm', 'false');
+		$state.go('eventList');
+	};
+
 	console.log("in top event");
 	
 	function fetchTopEvent() {
-		init();
-		// fetch 
 		$http.get(baseURL + email + '/topEvent')
 			 .success(function(res) {
 			 	if(res.status === 'success') {
@@ -236,12 +239,8 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 			 		$scope.datetime = eventTime.toLocaleTimeString();
 			 		$scope.address = res.event.address;
 			 		$scope.show = true;
-			 		// console.log($scope.eventid);
-			 		// console.log($scope.eventname);
-			 		// console.log($scope.datetime);
-			 		// console.log($scope.address);
-			 		// we need to register a background process now
-			 		register();
+			 		// we need to startInterval a background process now
+			 		startInterval();
 			 	} else {
 			 		// user don't have event!
 			 		$ionicLoading.hide();
@@ -252,23 +251,21 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 			 	console.log(err);
 			 });
 	}
-	
-	// fetchTopEvent();
 
-	function register() {
-		console.log("Just register");
-		cancel();
+	function startInterval() {
+		console.log("Just startInterval");
+		stopInterval();
 		promise = $interval(checkTraffic, timeInterval);
 	}
 
-	function cancel() {
+	function stopInterval() {
 		$interval.cancel(promise);
 	}
-
 
 	function convertSecToReadable(seconds) {
 		var minutes = ~~(seconds / 60);
 		var hours = ~~(minutes / 60);
+		minutes = ~~(minutes % 60);
 		return hours + " hrs " + minutes + " mins";
 	}
 
@@ -294,13 +291,18 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 			  		$scope.travelTime = convertSecToReadable(res.duration);
 			  		// release the screen to user
 			 		$ionicLoading.hide();
+			 		$scope.$broadcast('scroll.refreshComplete');
 			  		if((Date.parse(res.event.datetime) - curTime) > (res.duration*1000 + gap)) {
-			  			// silent
+			  			// it is not time to alert user, so directly went silent
 			  		} else {
-			  			// pop up an alert
-			  			if(LocalStorage.get('confirm') !== 'true') confirm(res.event.eventname);
+			  			// pop up an alert!!
+			  			if(LocalStorage.get('confirm') !== 'true') { 
+			  				$timeout(function() { confirm(res.event.eventname); }, timeInterval);
+			  			}
 
- 						if(LocalStorage.get('notification') !== 'true') addNotification();
+ 						if(LocalStorage.get('notification') !== 'true') { 
+ 							addNotification();
+ 						}
 			  		}
 			  	} else {
 			  		console.log(res);
@@ -317,8 +319,8 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 
 	function confirm(eventname) {
 	   var confirmPopup = $ionicPopup.confirm({
-	     title: 'Caution!',
-	     template: 'You need to go for ' + eventname,
+	     title: 'Caution',
+	     template: '<p>You need to go for<br><b>' + eventname +'</b></p>',
 	     cssClass: '',
 	     subTitle: '',
 	     templateUrl: '',
@@ -329,18 +331,27 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 	   });
 
 	   LocalStorage.set('confirm', 'true');
+	   // stop regular detecting first, change to timeout mode
+	   stopInterval();
 
 	   confirmPopup.then(function(res) {
 	     if(res) {
+	     	// we got it for this event
 	       console.log('You are sure');
-	       cancel();
+	       //  stopInterval notification for this event
+	       $scope.cancelNotification();
+	       // cancel unfullfilled timeout 
+	       $timeout.cancel(timeoutPromise);
 	       LocalStorage.set('confirm', 'false');
+	       // delete current top event and then fetch a new one.
 	       deleteTopEvent();
 	     } else {
 	     	// remind me later
 	       console.log('You are not sure');
 	       LocalStorage.set('confirm', 'false');
-	       //cancel();
+	       // Need to recheck the traffic in the future
+	       $timeout.cancel(timeoutPromise);
+	       timeoutPromise = $timeout(function() { checkTraffic(); }, 2 * timeInterval);
 	     }
 	   });
 	}
@@ -374,27 +385,16 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 	      });
 	}
 
-	//addNotification();
-
 	$scope.cancelNotification = function() {
-		// $cordovaLocalNotification.cancelAll().then(function () {
-  //     		console.log('callback for canceling all background notifications');
-  //   	});
 		cordova.plugins.notification.local.cancelAll(function() {
 			console.log('callback for canceling all background notifications');
 			LocalStorage.set('notification', 'false');
 		});
 	};
 
-	// $scope.$on('stopInterval', function() {
- //    	cancel();
- //    	console.log('stop interval');
- //    	LocalStorage.set('confirm', 'false');
- //    });
-
-
 	$scope.doRefresh = function() {
 		$scope.initialize();
+		//$scope.$broadcast('scroll.refreshComplete');
 	};
 
 	cordova.plugins.notification.local.on("click", function (notification) {
@@ -412,7 +412,7 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 
 	function handleClick(notification) {
 		console.log(notification.text);
-		// Once user click notification, cancel it
+		// Once user click notification, stopInterval it
 		$scope.cancelNotification();
 	}
 
@@ -426,13 +426,12 @@ function($scope, $http, $state, $interval, $cordovaGeolocation, $ionicPopup, $co
 
 .controller('EventCtrl', ['$scope', '$state', '$http', '$q', '$ionicLoading', '$rootScope', 
 function($scope, $state, $http, $q, $ionicLoading, $rootScope) {
-	email = 'fuqiang3701@gmail.com';
+	//email = 'fuqiang3701@gmail.com';
 	console.log("In event list!");
-	//$rootScope.$broadcast('stopInterval');
-	// hide loading process
+	$scope.show = false;
+
 	function showLoading() {
 		$ionicLoading.show({
-    		//template: 'Loading...'
     		templateUrl: 'templates/ionicLoading.html'
   		});
 	}
@@ -443,15 +442,36 @@ function($scope, $state, $http, $q, $ionicLoading, $rootScope) {
 
 	$scope.doRefresh = function() {
 		$scope.init();
+		// showLoading();
+		// $scope.getEvents()
+		// .then(function(res) {
+		// 	convert(res.events);
+		// 	$scope.eventList = res.events;
+		// 	if(res.events.length === 0) $scope.show = true;
+		// 	$ionicLoading.hide();
+		// 	$scope.$broadcast('scroll.refreshComplete');
+		// }, function(status) {
+		// 	$scope.pageError = status;
+		// 	$ionicLoading.hide();
+		// });
 	};
+
+	function convert(events) {
+		var len = events.length;
+		for(var i = 0; i < len; i++) {
+			events[i].datetime = new Date(events[i].datetime).toLocaleTimeString();
+		}
+	}
 
 	$scope.init = function() {
 		showLoading();
-		$scope.page = 1;
 		$scope.getEvents()
 		.then(function(res) {
+			convert(res.events);
 			$scope.eventList = res.events;
+			if(res.events.length === 0) $scope.show = true;
 			$ionicLoading.hide();
+			$scope.$broadcast('scroll.refreshComplete');
 		}, function(status) {
 			$scope.pageError = status;
 			$ionicLoading.hide();
@@ -460,7 +480,6 @@ function($scope, $state, $http, $q, $ionicLoading, $rootScope) {
 
 	$scope.getEvents = function() {
 		var defer = $q.defer();
-		// right now, I hard coded the email address, in the future, should use "email"
 		$http.get(baseURL + email + '/eventList')
 			 .success(function(res) {
 			 	defer.resolve(res);
@@ -470,19 +489,6 @@ function($scope, $state, $http, $q, $ionicLoading, $rootScope) {
 			 });
 		return defer.promise;
 	};
-
-	// $scope.nextPage = function() {
-	// 	$scope.page += 1;
-	// 	$scope.getEvents()
-	// 	.then(function(res) {
-	// 		if($scope.eventList[0]) {
-	// 			$scope.eventList = $scope.eventList.concat(res.events);
-	// 		} else {
-	// 			$scope.eventList = res.events;
-	// 		}
-	// 		$scope.$broadcast('scroll.infiniteScrollComplete');
-	// 	});
-	// };
 
 	$scope.onSwipeRight = function() {
 		console.log("You just swipe right!!");

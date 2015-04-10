@@ -1,25 +1,25 @@
-<ion-view view-title="Events">
-    <!-- <ion-nav-buttons side="left">
-        <button class="button button-positive button-clear no-animation" ng-click="goBack()">
-            <i class="button-icon ion-arrow-left-c"></i>
-        </button>
-    </ion-nav-buttons> -->
-    <ion-content padding="true" on-swipe-right="onSwipeRight()">
+<ion-view>
+    <div class="bar bar-header bar-calm">
+        <h1 class="title">Events</h1>
+    </div>
+    <ion-content class="has-header" padding="true" on-swipe-right="onSwipeRight()">
         <ion-refresher pulling-text="Pull to refresh" on-refresh="doRefresh()">
         </ion-refresher>
 
         <div class="list card" data-ng-repeat="event in eventList">
 
             <div>
-                <p>Event name: {{event.eventname}}</p>
-                <p>Event time: {{event.datetime}}</p>
-                <p>Event address: {{event.address}}</p>
-                
+                <div class="eventNameList"> <i class="icon ion-ios-calendar-outline"></i> {{event.eventname}} </div>
+                <br>
+                <div class="eventTimeList"> <i class="icon ion-ios-time-outline"></i> {{event.datetime}} </div>
+                <div class="eventAddressList"> <i class="icon ion-ios-location-outline"></i> {{event.address}} </div>
             </div>
         </div>
-        <!-- <ion-infinite-scroll
-            on-infinite="nextPage()"
-            distance="5%" data-ng-if="page < 10">
-        </ion-infinite-scroll> -->
+
+        <div class="card">
+            <div class="item item-text-wrap" ng-show="show">
+                <div class="eventName"> You don't have events today. </div>
+            </div>
+        </div>
     </ion-content>
 </ion-view>

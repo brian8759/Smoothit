@@ -1,12 +1,6 @@
-// Ionic Starter App
-
-// angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
-// the 2nd parameter is an array of 'requires'
 'use strict';
 
 angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionicApp.services'])
-
 
 .run(function($ionicPlatform, $rootScope, LocalStorage, $state, $timeout) {
   $ionicPlatform.ready(function() {
@@ -43,15 +37,15 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
             }
         });
 
-    $ionicPlatform.on("resume", function(event) {
-        console.log('event:' + event);
-        $rootScope.$broadcast('appResumeEvent');
-    });
+    // $ionicPlatform.on("resume", function(event) {
+    //     console.log('event:' + event);
+    //     $rootScope.$broadcast('appResumeEvent');
+    // });
 
-    $ionicPlatform.on("pause", function(event) {
-        console.log('event:' + event);
-        $rootScope.$broadcast('appPauseEvent');
-    });
+    // $ionicPlatform.on("pause", function(event) {
+    //     console.log('event:' + event);
+    //     $rootScope.$broadcast('appPauseEvent');
+    // });
 
     skipIntro = LocalStorage.get('skip') === 'true' ? true : false;
 
@@ -62,7 +56,7 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
             } else {
                 $state.go('intro');
             }
-        }, 2000);
+        }, 1400);
     }
 
   });
@@ -87,12 +81,6 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
     templateUrl: 'templates/login.html',
     controller: 'LoginCtrl'
   })
-  
-  // .state('secure', {
-  //   url: '/secure',
-  //   templateUrl: 'templates/secure.html',
-  //   controller: 'SecureCtrl'
-  // })
 
   .state('topEvent', {
     url: '/topEvent',
