@@ -1,29 +1,17 @@
+
+* {
+    font-family: 'Open Sans', sans-serif !important;
+}
 .slider {
-  height: 100%;
+    height: 100%;
 }
 .slider-slide {
-  padding-top: 80px;
-  background-color: #fff;
-  color: #000;
-  text-align: center;
-  font-weight: 300;
-  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
-}
-#logo {
-  margin: 30px 0px;
-}
-#list {
-  margin: 30px auto;
-  width: 170px;
-  font-size: 20px;
-}
-#list ol {
-  margin-top: 30px;
-}
-#list ol li {
-  margin: 10px 0px;
-  list-style: decimal;
-  text-align: left;
+    padding-top: 80px;
+    color: #000;
+    background-color: #fff;
+    text-align: center;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 300;
 }
 
 .ionic-logo {
@@ -31,4 +19,174 @@
   margin: 15px auto;
   width: 96px;
   height: 96px;
+}
+
+#intro1 { 
+  background: url("../img/intro1.png") no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+}
+
+#intro2 { 
+  background: url("../img/intro2.jpg") no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+}
+
+#login {
+  background: url("../img/smoothit.png") no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  background-size: cover;
+}
+
+#list {
+    width: 170px;
+    margin: 30px auto;
+    font-size: 20px;
+}
+#list ol {
+    margin-top: 30px;
+}
+#list ol li {
+    text-align: left;
+    list-style: decimal;
+    margin: 10px 0px;
+}
+#logo > img {
+    width: 36%;
+}
+.slider-pager-page.active .ion-record {
+    color: #F14A22;
+}
+p, .ft-17 {
+    font-size: 17px !important;
+}
+.item p {
+    white-space: normal;
+}
+.item h2 {
+    color: #F14A22;
+}
+.foot {
+    font-style: italic;
+    text-decoration: underline;
+}
+.center-footer {
+    text-align: center;
+    width: 100%;
+    color: white;
+}
+.splash h3.text-center {
+    padding-top: 20%;
+}
+.checkbox input:checked:before, .checkbox input:checked + .checkbox-icon:before {
+    background: #e42012;
+    border-color: #e42012;
+}
+.splash .loader {
+    margin: 0px auto;
+    display: block;
+}
+
+#signInBt {
+  position:relative;
+  left: 50%;
+  margin-top:100%;
+}
+
+#circleG {
+    width: 149.33333333333334px;
+    margin: 0px auto;
+    margin-top: 20px;
+    height: 36px;
+}
+.circleG {
+    background-color: #FFFFFF;
+    float: left;
+    height: 32px;
+    margin-left: 9px;
+    width: 32px;
+    -moz-animation-name: bounce_circleG;
+    -moz-animation-duration: 1.9500000000000002s;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-direction: linear;
+    -moz-border-radius: 21px;
+    -webkit-animation-name: bounce_circleG;
+    -webkit-animation-duration: 1.9500000000000002s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-direction: linear;
+    -webkit-border-radius: 21px;
+    -ms-animation-name: bounce_circleG;
+    -ms-animation-duration: 1.9500000000000002s;
+    -ms-animation-iteration-count: infinite;
+    -ms-animation-direction: linear;
+    -ms-border-radius: 21px;
+    -o-animation-name: bounce_circleG;
+    -o-animation-duration: 1.9500000000000002s;
+    -o-animation-iteration-count: infinite;
+    -o-animation-direction: linear;
+    -o-border-radius: 21px;
+    animation-name: bounce_circleG;
+    animation-duration: 1.9500000000000002s;
+    animation-iteration-count: infinite;
+    animation-direction: linear;
+    border-radius: 21px;
+}
+#circleG_1 {
+    -moz-animation-delay: 0.39s;
+    -webkit-animation-delay: 0.39s;
+    -ms-animation-delay: 0.39s;
+    -o-animation-delay: 0.39s;
+    animation-delay: 0.39s;
+}
+#circleG_2 {
+    -moz-animation-delay: 0.9099999999999999s;
+    -webkit-animation-delay: 0.9099999999999999s;
+    -ms-animation-delay: 0.9099999999999999s;
+    -o-animation-delay: 0.9099999999999999s;
+    animation-delay: 0.9099999999999999s;
+}
+#circleG_3 {
+    -moz-animation-delay: 1.1700000000000002s;
+    -webkit-animation-delay: 1.1700000000000002s;
+    -ms-animation-delay: 1.1700000000000002s;
+    -o-animation-delay: 1.1700000000000002s;
+    animation-delay: 1.1700000000000002s;
+}
+
+#swipeButton {
+  left: 200px;
+}
+@-moz-keyframes bounce_circleG {
+    0% {} 50% {
+        background-color: #ef4e3a
+    }
+    100% {}
+}
+@-webkit-keyframes bounce_circleG {
+    0% {} 50% {
+        background-color: #ef4e3a
+    }
+    100% {}
+}
+@-ms-keyframes bounce_circleG {
+    0% {} 50% {
+        background-color: #ef4e3a
+    }
+    100% {}
+}
+@-o-keyframes bounce_circleG {
+    0% {} 50% {
+        background-color: #ef4e3a
+    }
+    100% {}
+}
+@keyframes bounce_circleG {
+    0% {} 50% {
+        background-color: #ef4e3a
+    }
+    100% {}
 }

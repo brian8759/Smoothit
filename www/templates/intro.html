@@ -1,5 +1,5 @@
 <ion-view>
-  <ion-nav-buttons side="left">
+  <!-- <ion-nav-buttons side="left">
     <button class="button button-positive button-clear no-animation"
             ng-click="startApp()" ng-show="!slideIndex">
       Skip
@@ -12,47 +12,24 @@
   
   <ion-nav-buttons side="right">
     <button class="button button-positive button-clear no-animation"
-            ng-click="next()" ng-show="slideIndex != 2">
+            ng-click="next()" ng-show="slideIndex != 1">
       Next
     </button>
     <button class="button button-positive button-clear no-animation"
-            ng-click="startApp()" ng-show="slideIndex == 2">
+            ng-click="startApp()" ng-show="slideIndex == 1">
       Sign in
     </button>
-  </ion-nav-buttons>
+  </ion-nav-buttons> -->
 
   <ion-slide-box on-slide-changed="slideChanged(index)">
-    <ion-slide>
-      <h3>Thank you for choosing the Awesome App!</h3>
-      <div id="logo">
-        <img src="http://code.ionicframework.com/assets/img/app_icon.png">
-      </div>
-      <p>
-        We've worked super hard to make you happy.
-      </p>
-      <p>
-        But if you are angry, too bad.
-      </p>
+    <ion-slide id="intro1">
     </ion-slide>
 
-    <ion-slide>
-      <h3>Using Awesome</h3>
-
-      <div id="list">
-        <h5>Just three steps:</h5>
-        <ol>
-          <li>Be awesome</li>
-          <li>Stay awesome</li>
-          <li>There is no step 3</li>
-        </ol>
-      </div>
+    <ion-slide id="intro2">
+      
+        <button id="signInBt" ng-click="signin()" class="button button-small button-energized"> Sign in</button>
+      
     </ion-slide>
 
-    <ion-slide>
-      <h3>Any questions?</h3>
-      <p>
-        Too bad!
-      </p>
-    </ion-slide>
   </ion-slide-box>
 </ion-view>

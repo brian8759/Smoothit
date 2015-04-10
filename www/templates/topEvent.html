@@ -1,25 +1,37 @@
 <ion-view view-title="Top Event">
-	<ion-nav-buttons side="right">
+	<!-- <ion-nav-buttons side="right">
 	    <button class="button button-positive button-clear no-animation" ng-click="getEventList()">
 	      Events
 	    </button>
-  	</ion-nav-buttons>
+  	</ion-nav-buttons> -->
 
-    <ion-content padding="true">
+    <ion-content padding="true" on-swipe-left="onSwipeLeft()">
+    	<ion-refresher pulling-text="Pull to refresh" on-refresh="doRefresh()">
+        </ion-refresher>
+
       	<div class="card">
-		  	<div class="item item-text-wrap" ng-show="show">
-		    	Event name: {{eventname}}<br>
-                Event time: {{datetime}}<br>
-                Event address: {{address}}
-		  	</div>
+      	  <div class="item item-divider" ng-show="show">
+		      {{eventname}}
+		  </div>
+		  <div class="item item-text-wrap" ng-show="show">
+              {{datetime}}<br>
+              {{address}}
+		  </div>
+		  <div class="item item-divider" ng-show="show">
+		      {{travelTime}}
+		  </div>
+		  
 		  	<div class="item item-text-wrap" ng-hide="show">
 		  		You don't have events today.
 		  	</div>
 		</div>
+
 		<div class="padding">
-			<button class="button button-block button-stable" ng-click="cancelNotification()">
+			<button class="button button-outline button-positive" ng-click="cancelNotification()">
 				cancel
 			</button>
 		</div>
+
+		<!-- <button id="swipeButton" on-swipe-left="onSwipeLeft()" class="button button-block button-positive">Test</button> -->
     </ion-content>
 </ion-view>

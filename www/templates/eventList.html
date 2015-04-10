@@ -1,5 +1,13 @@
 <ion-view view-title="Events">
-    <ion-content padding="true">
+    <!-- <ion-nav-buttons side="left">
+        <button class="button button-positive button-clear no-animation" ng-click="goBack()">
+            <i class="button-icon ion-arrow-left-c"></i>
+        </button>
+    </ion-nav-buttons> -->
+    <ion-content padding="true" on-swipe-right="onSwipeRight()">
+        <ion-refresher pulling-text="Pull to refresh" on-refresh="doRefresh()">
+        </ion-refresher>
+
         <div class="list card" data-ng-repeat="event in eventList">
 
             <div>

@@ -27,14 +27,14 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
 
             if (fromState.name === 'login' && toState.name === 'intro') {
                 if (skipIntro) {
-                    navigator.app.exitApp();
+                    $state.go('intro');
                 }
             }
             if (fromState.name === 'intro' && toState.name === 'loading') {
-                navigator.app.exitApp();
+                $state.go('intro');
             }
             if (fromState.name === 'login' && toState.name === 'loading') {
-                navigator.app.exitApp();
+                $state.go('intro');
             }
             if (toState.name === 'intro') {
                 if (skipIntro) {
@@ -42,6 +42,16 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
                 }
             }
         });
+
+    $ionicPlatform.on("resume", function(event) {
+        console.log('event:' + event);
+        $rootScope.$broadcast('appResumeEvent');
+    });
+
+    $ionicPlatform.on("pause", function(event) {
+        console.log('event:' + event);
+        $rootScope.$broadcast('appPauseEvent');
+    });
 
     skipIntro = LocalStorage.get('skip') === 'true' ? true : false;
 
@@ -52,7 +62,7 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
             } else {
                 $state.go('intro');
             }
-        }, 1000);
+        }, 2000);
     }
 
   });
@@ -78,11 +88,11 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
     controller: 'LoginCtrl'
   })
   
-  .state('secure', {
-    url: '/secure',
-    templateUrl: 'templates/secure.html',
-    controller: 'SecureCtrl'
-  })
+  // .state('secure', {
+  //   url: '/secure',
+  //   templateUrl: 'templates/secure.html',
+  //   controller: 'SecureCtrl'
+  // })
 
   .state('topEvent', {
     url: '/topEvent',
@@ -94,12 +104,6 @@ angular.module('ionicApp', ['ionic', 'ngCordova', 'ionicApp.controllers', 'ionic
     url: '/eventList',
     templateUrl: 'templates/eventList.html',
     controller: 'EventCtrl'
-  })
-
-  .state('main', {
-    url: '/main',
-    templateUrl: 'templates/main.html',
-    controller: 'MainCtrl'
   });
 
   $urlRouterProvider.otherwise("/loading");
